@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Three框架</title>
+        <script src="js/Three.js" data-ke-src="js/Three.js"></script>
+        <script src="js/Stats.js"></script><!--性能检测器-->
+        <script src="js/tween.min.js" data-ke-src="js/tween.min.js"></script> <!--动画js库-->
+        <style type="text/css">
+            div#canvas-frame {
+                border: none;
+                cursor: pointer;
+                width: 100%;
+                height: 600px;
+                background-color: rgb(141, 24, 24);
+            }
+
+        </style>
+        <script>
+            var stats;//性能监视器
+            var renderer;
+            function initThree() {
+                width = document.getElementById('canvas-frame').clientWidth;
+                height = document.getElementById('canvas-frame').clientHeight;
+                renderer = new THREE.WebGLRenderer({
+                    antialias : true
+                });
+                renderer.setSize(width, height);
+                document.getElementById('canvas-frame').appendChild(renderer.domElement);
+                //renderer.setClearColor(0xFF00FF, 1.0);//setClearColor这个接口不起作用，应该用setClearColorHex
+                renderer.setClearColorHex(0xFFFFFF,1.0);//设置渲染器的清除色
+
+                //性能监视器
+                stats = new Stats();
+                stats.domElement.style.position = 'absolute';
+                stats.domElement.style.left = '0px';
+                stats.domElement.style.top = '0px';
+                document.getElementById('canvas-frame').appendChild(stats.domElement);
+            }
+
+            var camera;
+            function initCamera() {
+                //透视投影
+                //camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+                //正视投影
+                camera = new THREE.OrthographicCamera(-window.innerWidth/2,window.innerWidth/2,
+                window.innerHeight/2,-window.innerHeight/2,10,1000);
+                camera.position.x = 0;
+                camera.position.y = 1000;
+                camera.position.z = 0;
+                camera.up.x = 0;
+                camera.up.y = 0;
+                camera.up.z = 1;
+                camera.lookAt({
+                    x : 0,
+                    y : 0,
+                    z : 0
+                });
+            }
+
+            var scene;
+            function initScene() {
+                scene = new THREE.Scene();
+            }
+
+            var light;
+            function initLight() {
+                light = new THREE.DirectionalLight(0xFF0000, 1.0, 0);
+                light.position.set(100, 100, 200);
+                scene.add(light);
+            }
+
+            var cube;
+            //绘制彩色线条
+            function initObject() {
+
+                var geometry = new THREE.Geometry();
+                var material = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors} );
+                var color1 = new THREE.Color( 0x444444 ), color2 = new THREE.Color( 0xFF0000 );
+
+                // 线的材质可以由2点的颜色决定
+                var p1 = new THREE.Vector3( -100, 0, 100 );
+                var p2 = new THREE.Vector3(  100, 0, -100 );
+                geometry.vertices.push(p1);
+                geometry.vertices.push(p2);
+                geometry.colors.push( color1, color2 );
+
+                var line = new THREE.Line( geometry, material, THREE.LinePieces );
+                scene.add(line);
+            }
+
+            //绘制网格线
+            function initObject2() {
+                var geometry = new THREE.Geometry();
+                geometry.vertices.push( new THREE.Vector3( - 500, 0, 0 ) );
+                geometry.vertices.push( new THREE.Vector3( 500, 0, 0 ) );
+
+                for ( var i = 0; i <= 20; i ++ ) {
+                    //0x000000
+                    var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } ) );
+                    line.position.z = ( i * 50 ) - 500;
+                    scene.add( line );
+
+                    var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } ) );
+                    line.position.x = ( i * 50 ) - 500;
+                    line.rotation.y = 90 * Math.PI / 180;
+                    scene.add( line );
+
+                }
+            }
+
+            //绘制一个立体物体
+            var mesh;
+            function initObject3() {
+                var geometry = new THREE.CylinderGeometry( 100,150,400);
+                var material = new THREE.MeshLambertMaterial( { color:0xFFFF00} );
+                mesh = new THREE.Mesh( geometry,material);
+                mesh.position = new THREE.Vector3(0,0,0);
+                scene.add(mesh);
+            }
+
+            //贴图
+            function initObject4(){
+                //构造一个500*300的平面
+                var geometry = new THREE.PlaneGeometry( 500, 300, 1, 1 );
+                geometry.vertices[0].uv = new THREE.Vector2(0,0);
+                geometry.vertices[1].uv = new THREE.Vector2(2,0);
+                geometry.vertices[2].uv = new THREE.Vector2(2,2);
+                geometry.vertices[3].uv = new THREE.Vector2(0,2);
+                // 加载贴图必须是网上的不能是本地的
+                var texture = THREE.ImageUtils.loadTexture("texture/cubeTexture1.bmp",null,function(t){});
+                var material = new THREE.MeshBasicMaterial({map:texture});
+                var mesh1 = new THREE.Mesh( geometry,material );
+                scene.add( mesh1 );
+            }
+
+            //构造动画
+            /*
+             TWEEN.Tween的构造函数接受的是要改变属性的对象，这里传入的是mesh的位置。
+             Tween的任何一个函数返回的都是自身，所以可以用串联的方式直接调用各个函数。
+            to函数，接受两个参数，第一个参数是一个集合，里面存放的键值对，键x表示mesh.position的x属性，值-400表示，动画结束的时候需要移动到的位置。
+            第二个参数，是完成动画需要的时间，这里是3000ms。
+            repeat( Infinity )表示重复无穷次，也可以接受一个整形数值，例如5次。
+            Start表示开始动画，默认情况下是匀速的将mesh.position.x移动到-400的位置。 
+            */
+            function initTween()
+            {
+                new TWEEN.Tween( mesh.position)
+                        .to( { x: -400 }, 3000 ).repeat( Infinity ).start();
+            }
+
+            function render()
+            {
+                //以下两句为动画效果
+                //camera.position.x =camera.position.x +1;//视图移动
+                //mesh.position.x += 1;//物体移动
+                
+                //renderer.clear();                
+                renderer.render(scene, camera);
+                requestAnimationFrame(render);
+
+                //实时刷新性能检测器
+                stats.update();
+
+                //如果不用上面的方式，就可以用这种方式去实现动画效果
+                TWEEN.update();
+            }
+            function threeStart() {
+                initThree();
+                initCamera();
+                initScene();
+                initLight();
+                initObject();
+                initObject2();
+                initObject3();
+                initObject4();
+                initTween();//初始化动画
+                render();
+            }
+
+        </script>
+    </head>
+
+    <body onload="threeStart();">
+        <div id="canvas-frame"></div>
+    </body>
+</html>
