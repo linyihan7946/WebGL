@@ -18,7 +18,7 @@
         </style>
         <script>
             var stats;//性能监视器
-            var renderer;
+            var renderer;//渲染器
             function initThree() {
                 width = document.getElementById('canvas-frame').clientWidth;
                 height = document.getElementById('canvas-frame').clientHeight;
@@ -38,7 +38,7 @@
                 document.getElementById('canvas-frame').appendChild(stats.domElement);
             }
 
-            var camera;
+            var camera;//相机
             function initCamera() {
                 //透视投影
                 //camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
@@ -46,11 +46,11 @@
                 camera = new THREE.OrthographicCamera(-window.innerWidth/2,window.innerWidth/2,
                 window.innerHeight/2,-window.innerHeight/2,10,1000);
                 camera.position.x = 0;
-                camera.position.y = 1000;
-                camera.position.z = 0;
+                camera.position.y = 0;//1000;
+                camera.position.z = 1000;//0;
                 camera.up.x = 0;
-                camera.up.y = 0;
-                camera.up.z = 1;
+                camera.up.y = 1;//0;
+                camera.up.z = 0;//1;
                 camera.lookAt({
                     x : 0,
                     y : 0,
@@ -58,19 +58,41 @@
                 });
             }
 
-            var scene;
+            function setcamera(w, h, near, far, 
+                                posx, posy, posz, 
+                                upx, upy, upz, 
+                                tarx, tary, tarz)
+            {
+                //透视投影
+                //camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+                //正视投影
+                camera = new THREE.OrthographicCamera(-w/2,w/2,h/2,-h/2,near,far);
+                camera.position.x = posx;
+                camera.position.y = posy;
+                camera.position.z = posz;
+                camera.up.x = upx;
+                camera.up.y = upy;
+                camera.up.z = upz;
+                camera.lookAt({
+                    x : tarx,
+                    y : tary,
+                    z : tarz
+                });
+            }
+
+            var scene;//场景
             function initScene() {
                 scene = new THREE.Scene();
             }
 
-            var light;
+            var light;//灯光
             function initLight() {
                 light = new THREE.DirectionalLight(0xFF0000, 1.0, 0);
                 light.position.set(100, 100, 200);
                 scene.add(light);
             }
 
-            var cube;
+            var cube;//立体物体
             //绘制彩色线条
             function initObject() {
 
@@ -79,8 +101,8 @@
                 var color1 = new THREE.Color( 0x444444 ), color2 = new THREE.Color( 0xFF0000 );
 
                 // 线的材质可以由2点的颜色决定
-                var p1 = new THREE.Vector3( -100, 0, 100 );
-                var p2 = new THREE.Vector3(  100, 0, -100 );
+                var p1 = new THREE.Vector3( -100, 100, 0 );
+                var p2 = new THREE.Vector3(  100, -100, 0 );
                 geometry.vertices.push(p1);
                 geometry.vertices.push(p2);
                 geometry.colors.push( color1, color2 );
@@ -98,12 +120,12 @@
                 for ( var i = 0; i <= 20; i ++ ) {
                     //0x000000
                     var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } ) );
-                    line.position.z = ( i * 50 ) - 500;
+                    line.position.y = ( i * 50 ) - 500;
                     scene.add( line );
 
                     var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x000000, opacity: 0.2 } ) );
                     line.position.x = ( i * 50 ) - 500;
-                    line.rotation.y = 90 * Math.PI / 180;
+                    line.rotation.z = 90 * Math.PI / 180;
                     scene.add( line );
 
                 }
@@ -128,7 +150,7 @@
                 geometry.vertices[2].uv = new THREE.Vector2(2,2);
                 geometry.vertices[3].uv = new THREE.Vector2(0,2);
                 // 加载贴图必须是网上的不能是本地的
-                var texture = THREE.ImageUtils.loadTexture("texture/cubeTexture1.bmp",null,function(t){});
+                var texture = THREE.ImageUtils.loadTexture("textures/1.bmp",null,function(t){});
                 var material = new THREE.MeshBasicMaterial({map:texture});
                 var mesh1 = new THREE.Mesh( geometry,material );
                 scene.add( mesh1 );
@@ -167,7 +189,9 @@
             }
             function threeStart() {
                 initThree();
-                initCamera();
+                //initCamera();
+                setcamera(window.innerWidth, window.innerHeight, 10, 1000, 
+                0,0,1000, 0,1,0, 0,0,0);
                 initScene();
                 initLight();
                 initObject();
