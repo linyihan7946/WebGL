@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
@@ -203,7 +203,7 @@
                 scene.add( mesh1 );
             }
 
-            /*
+            
             function Entity()
             {
                 this.geometry = new THREE.Geometry();
@@ -214,7 +214,6 @@
                 this.motion_valuecur = 0;
                 this.motion_valuemin = 0;
                 this.motion_valuemax = 0;
-                this.children = new Array();
             }
 
             //解析xml文件
@@ -224,24 +223,289 @@
                 // 根据不同浏览器进行解析
                 if(window.DOMParser){
                     // 其他浏览器  
+                    alert("window.DOMParser");
                     var parser = new DOMParser();
+                    alert("window.DOMParser-1");
                     xmlDoc = parser.parseFromString(xmlFile,"application/xml");
+                    alert("window.DOMParser-2");
                 }else{
                     // IE浏览器
+                    alert("!window.DOMParser");
                     xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
                     xmlDoc.async = false;
                     xmlDoc.loadXML(xmlFile);
+                    alert("!window.DOMParser_2");
                 }
                 return xmlDoc;
             }
 
-            void getEntity(ent, elements1)
+            function parseXML2(xmlFile)
             {
-                for (var i = 0; i < elements1.length; i++) 
+                alert("parseXML2——1");
+                    var xmlDoc=null;
+                    //判断浏览器的类型
+                    //支持IE浏览器
+                    if(!window.DOMParser && window.ActiveXObject)
+                    {
+                        alert("!window.DOMParser && window.ActiveXObject");
+                        var xmlDomVersions = ['MSXML.2.DOMDocument.6.0','MSXML.2.DOMDocument.3.0','Microsoft.XMLDOM'];
+                        for(var i=0;i<xmlDomVersions.length;i++){
+                            try{
+                                xmlDoc = new ActiveXObject(xmlDomVersions[i]);
+                                break;
+                            }catch(e){
+                            }
+                        }
+                    }
+                    //支持Mozilla浏览器
+                    else if(document.implementation && document.implementation.createDocument)
+                    {
+                        alert("支持Mozilla浏览器");
+                        try{
+                            /* document.implementation.createDocument('','',null); 方法的三个参数说明
+                            * 第一个参数是包含文档所使用的命名空间URI的字符串； 
+                            * 第二个参数是包含文档根元素名称的字符串； 
+                            * 第三个参数是要创建的文档类型（也称为doctype）
+                            */
+                            xmlDoc = document.implementation.createDocument('','',null);
+                        }catch(e){
+                        }
+                    }
+                    else
+                    {
+                        alert("返回null");
+                        return null;
+                    }
+                    alert("parseXML2——3");
+                    if(xmlDoc!=null)
+                    {
+                        xmlDoc.async = false;
+                        alert("parseXML2——3.2");
+                        xmlDoc.load(xmlFile);
+                        alert("parseXML2——3.3");
+                    }
+                    alert("parseXML2——4");
+                    return xmlDoc;
+            }
+
+            //加载xml文件
+            function loadXMLDoc(dname) 
+            {
+                var xmlDoc;
+                try //Internet Explorer
                 {
-                    elements1[i].childnode
-                    var attr = elements1[i].getElementsByTagName("Attr")[0].firstChild.nodeValue;
-                    var Entity = elements1[i].getElementsByTagName("Entity")[0].firstChild.nodeValue;               
+                    alert("loadXMLDoc_1");
+                    xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+                }
+                catch(e)
+                {
+                    try //Firefox, Mozilla, Opera, etc.
+                    {
+                        alert("loadXMLDoc_2");
+                        xmlDoc=document.implementation.createDocument("","",null);
+                    }
+                    catch(e) 
+                    {
+                        alert(e.message);
+                    }
+                }
+                try 
+                {
+                    alert("loadXMLDoc_3");
+                    xmlDoc.async=false;
+                    xmlDoc.load(dname);
+                    alert("loadXMLDoc_4");
+                    return(xmlDoc);
+                }
+                catch(e) 
+                {
+                    alert("loadXMLDoc_5");
+                    //webkit BUG,chrome etc.
+                    xmlDoc = new XMLHttpRequest(); //用AJAX中常见的套路来就可以解决了，不影响IE、FIREFOX的原生加载XML 
+                    xmlDoc.overrideMimeType("text/xml");
+                    xmlDoc.open("GET", dname, false);
+                    xmlDoc.send(null);
+                    //xmlResult = xmlDoc.responseXML; 
+                    alert("loadXMLDoc_6");
+                    return xmlDoc;
+
+                    //alert(e.message);
+                }
+                return(null);
+            }
+
+            function loadXMLDoc1(dname)
+            {
+                var xmlDoc;
+
+                // 针对 IE 的代码
+                if (window.ActiveXObject)
+                {
+                xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+                }
+
+                // 针对 Mozilla、Firefox、Opera 的代码
+                else if (document.implementation && document.implementation.createDocument)
+                {
+                xmlDoc=document.implementation.createDocument("","",null);
+                }
+
+                else
+                {
+                alert('您的浏览器无法处理此脚本');
+                }
+
+                alert('loadXMLDoc1-1');
+                xmlDoc.async=false;
+                xmlDoc.load(dname);
+                alert('loadXMLDoc1-2');
+                return(xmlDoc);
+            }
+
+            //加载xml可用版本（火狐浏览器可以、谷歌浏览器不行）
+            function loadXMLDoc2(xmlFile) 
+            {
+                var xmlDoc;
+                if (window.ActiveXObject) 
+                {//IE浏览器
+                    xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
+                    xmlDoc.async = false;
+                    xmlDoc.load(xmlFile);
+                }
+                else if (isFirefox=navigator.userAgent.indexOf("Firefox")>0) 
+                {//火狐浏览器
+                    xmlDoc = document.implementation.createDocument('', '', null);
+                    xmlDoc.load(xmlFile);
+                }
+                else
+                { //谷歌浏览器（经过测试不可用）
+                    var xmlhttp = new window.XMLHttpRequest();
+                    xmlhttp.open("GET",xmlFile,false);
+                    xmlhttp.send(null);
+                    if(xmlhttp.readyState == 4)
+                        xmlDoc = xmlhttp.responseXML.documentElement;
+                }
+
+                return xmlDoc;
+            }
+
+            var entCount = 0;
+            function getEntity(ent, element1)
+            {
+                var i, j, k, l, m, n;
+                /*
+                if ('Entity' == element1.nodeName)//Entity
+                {
+                    alert(element1.nodeName + entCount);
+                    entCount++;
+                }
+                else if ('Surface' == element1.nodeName)//mesh数据
+                {
+                    alert(element1.nodeName + entCount);
+                    entCount++;
+                }
+                else if ('Attr' == element1.nodeName)//mesh数据
+                {
+                    alert(element1.nodeName + entCount);
+                    entCount++;
+                }
+                */
+                    
+
+                for (k = 0; k < element1.childNodes.length; k++)//拿到子节点的信息
+                {
+                    var element2 = element1.childNodes[k];
+                    if ('Entity' == element2.nodeName)//Entity
+                    {
+                        getEntity(ent, element2);
+                    }
+                    else if ('Surface' == element2.nodeName)//mesh数据
+                    {
+                        //alert(element2.nodeName);
+                        for (l = 0; l < element2.childNodes.length; l++)
+                        {
+                            var element3 = element2.childNodes[l];
+                            if ('Mesh' == element3.nodeName)
+                            {
+                                for (m = 0; m < element3.childNodes.length; m++)
+                                {
+                                    var element4 = element3.childNodes[m];
+                                    if ('mat' == element4.nodeName)//贴图信息
+                                    {
+                                        for (n = 0; n < element4.childNodes.length; n++)
+                                        {
+                                            var element5 = element4.childNodes[n];
+                                            if ('map' == element5.nodeName)
+                                            {
+
+                                            }
+                                            else if ('c' == element5.nodeName)
+                                            {
+
+                                            }
+                                        }
+                                    }
+                                    else if ('vert' == element4.nodeName)//顶点信息
+                                    {
+                                        for (n = 0; n < element4.childNodes.length; n++)
+                                        {
+                                            var element5 = element4.childNodes[n];
+                                            if ('v' == element5.nodeName)
+                                            {
+                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
+                                                var arVert = sValue.split(' ');//通过空格分开拿到数据
+                                                //alert(arVert);
+                                            }
+                                            else if ('vt' == element5.nodeName)
+                                            {
+
+                                            }
+                                            else if ('vi' == element5.nodeName)
+                                            {
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if ('Attr' == element2.nodeName)//Attr属性
+                    {
+                        //alert(element2.nodeName);
+                        for (l = 0; l < element2.childNodes.length; l++)
+                        {
+                            var element3 = element2.childNodes[l];
+                            if ('id' == element3.nodeName)
+                            {
+
+                            }
+                            else if ('motion_type' == element3.nodeName)
+                            {
+
+                            }
+                            else if ('motion_pos' == element3.nodeName)
+                            {
+
+                            }
+                            else if ('motion_vec' == element3.nodeName)
+                            {
+
+                            }
+                            else if ('motion_valuecur' == element3.nodeName)
+                            {
+
+                            }
+                            else if ('motion_valuemin' == element3.nodeName)
+                            {
+
+                            }
+                            else if ('motion_valuemax' == element3.nodeName)
+                            {
+
+                            }
+                        }
+                    }
                 }
             }
 
@@ -261,8 +525,137 @@
             //加载3DShow场景
             function loadScene_3DShow()
             {
+                //2AECA33B_1617378
+                //2B58D52C_21900
+                //Test
+                var xmlfile = "scene/HomeKooTemp78257_2/scenedata/2B58D52C_21900.xml";
+                var xmlDoc=loadXMLDoc2(xmlfile);
+                alert(xmlDoc);//要弹出这个后面才能读到数据，可能时异步加载xml导致的问题
+                var vvf = xmlDoc.getElementsByTagName("vvFile");//vvFile
+                //alert(vvf.length);
+                
+                //根节点vvFile
+                //子节点Entity(vvFile只有一个Entity子节点，没有Attr)
+                //Entity的子节点：多个Entity和一个Attr或者有Surface
+                //Entity递归
+                //Attr子节点:id、motion_type、motion_pos、motion_vec、motion_valuecur、motion_valuemin、motion_valuemax
+                //Surface子节点:Mesh
+                //Mesh子节点：mat、vert
+                //mat子节点：map、c
+                //vert子节点：v、vt、vi
+                var i, j, k, l, m, n;
+                for (i = 0; i < vvf.length; i++)//vvFile 
+                {
+                    alert(vvf[i].nodeName);
+                    for (j = 0; j < vvf[i].childNodes.length; j++)//拿到子节点的信息
+                    {
+                        var element1 = vvf[i].childNodes[j];
+                        var ent = new Entity();
+                        getEntity(ent, element1);
+                        /*
+                        if ('Entity' == element1.nodeName)//第一级Entity
+                        {
+                            //alert(element1.nodeName);
+                            for (k = 0; k < element1.childNodes.length; k++)//拿到子节点的信息
+                            {
+                                var element2 = element1.childNodes[k];
+                                if ('Entity' == element2.nodeName)//Entity
+                                {
+                                    //alert(element2.nodeName);
+                                }
+                                else if ('Surface' == element2.nodeName)//mesh数据
+                                {
+                                    for (l = 0; l < element2.childNodes.length; l++)
+                                    {
+                                        var element3 = element2.childNodes[l];
+                                        if ('Mesh' == element3.nodeName)
+                                        {
+                                            for (m = 0; m < element3.childNodes.length; m++)
+                                            {
+                                                var element4 = element3.childNodes[m];
+                                                if ('mat' == element4.nodeName)//贴图信息
+                                                {
+                                                    for (n = 0; n < element4.childNodes.length; n++)
+                                                    {
+                                                        var element5 = element4.childNodes[n];
+                                                        if ('map' == element5.nodeName)
+                                                        {
 
-            }*/
+                                                        }
+                                                        else if ('c' == element5.nodeName)
+                                                        {
+
+                                                        }
+                                                    }
+                                                }
+                                                else if ('vert' == element4.nodeName)//顶点信息
+                                                {
+                                                    for (n = 0; n < element4.childNodes.length; n++)
+                                                    {
+                                                        var element5 = element4.childNodes[n];
+                                                        if ('v' == element5.nodeName)
+                                                        {
+                                                            var sValue = element5.nodeValue;
+                                                            sValue.split(' ');//通过空格分开拿到数据
+                                                            alert(sValue);
+                                                        }
+                                                        else if ('vt' == element5.nodeName)
+                                                        {
+
+                                                        }
+                                                        else if ('vi' == element5.nodeName)
+                                                        {
+
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else if ('Attr' == element2.nodeName)//Attr属性
+                                {
+                                    //alert(element2.nodeName);
+                                    for (l = 0; l < element2.childNodes.length; l++)
+                                    {
+                                        var element3 = element2.childNodes[l];
+                                        if ('id' == element3.nodeName)
+                                        {
+
+                                        }
+                                        else if ('motion_type' == element3.nodeName)
+                                        {
+
+                                        }
+                                        else if ('motion_pos' == element3.nodeName)
+                                        {
+
+                                        }
+                                        else if ('motion_vec' == element3.nodeName)
+                                        {
+
+                                        }
+                                        else if ('motion_valuecur' == element3.nodeName)
+                                        {
+
+                                        }
+                                        else if ('motion_valuemin' == element3.nodeName)
+                                        {
+
+                                        }
+                                        else if ('motion_valuemax' == element3.nodeName)
+                                        {
+
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        }*/
+                    }         
+                }
+                
+            }
             
             //构造动画
             /*
@@ -327,7 +720,7 @@
             }
 
             function threeStart() {
-                
+                /*
                 //鼠标滑轮消息
                 var oDiv = document.getElementById('canvas-frame');  
                 function onMouseWheel(ev) 
@@ -391,9 +784,11 @@
                 initLight();
                 initObject_Net();
                 initObject();
+		*/
+		loadScene_3DShow();
                 //initObject_Texture();
                 //initTween();//初始化动画
-                render();
+                //render();
             }
 
         </script>
