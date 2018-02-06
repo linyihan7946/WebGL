@@ -43,40 +43,33 @@
             var camera_position = new THREE.Vector3( 0, 0, 10000 );
             var camera_up = new THREE.Vector3( 0, 1, 0 );
             var camera_tar = new THREE.Vector3( 0, 0, 0 );
-            function setcamera(w, h, near, far, 
-                                posx, posy, posz, 
-                                upx, upy, upz, 
-                                tarx, tary, tarz)
+            function setcamera(w, h, near, far, pos, up, tar)
             {
                 //不能将视角移动到太远的地方
                 var dMax = 15000;
-                if (posx < -dMax) posx = -dMax;
-                if (posy < -dMax) posy = -dMax;
-                if (posx > dMax) posx = dMax;
-                if (posy > dMax) posy = dMax;
+                if (pos.x < -dMax) pos.x = -dMax;
+                if (pos.y < -dMax) pos.y = -dMax;
+                if (pos.x > dMax) pos.x = dMax;
+                if (pos.y > dMax) pos.y = dMax;
 
-                if (tarx < -dMax) tarx = -dMax;
-                if (tary < -dMax) tary = -dMax;
-                if (tarx > dMax) tarx = dMax;
-                if (tary > dMax) tary = dMax;
+                if (tar.x < -dMax) tar.x = -dMax;
+                if (tar.y < -dMax) tar.y = -dMax;
+                if (tar.x > dMax) tar.x = dMax;
+                if (tar.y > dMax) tar.y = dMax;
                 //透视投影
                 camera = new THREE.PerspectiveCamera(45, width / height, near, far);
                 //正视投影
                 //camera = new THREE.OrthographicCamera(-w/2,w/2,h/2,-h/2,near,far);
-                camera.position.x = posx;
-                camera.position.y = posy;
-                camera.position.z = posz;
-                camera.up.x = upx;
-                camera.up.y = upy;
-                camera.up.z = upz;
+                camera.position = pos;
+                camera.up = up;
                 camera.lookAt({
-                    x : tarx,
-                    y : tary,
-                    z : tarz
+                    x : tar.x,
+                    y : tar.y,
+                    z : tar.z
                 });
-                camera_position.set(posx, posy, posz);
-                camera_up.set(upx, upy, upz);
-                camera_tar.set(tarx, tary, tarz);
+                camera_position = pos;;
+                camera_up = up;
+                camera_tar = tar;
             }
             
             //场景
@@ -137,8 +130,8 @@
                 var l = 6000, w = 4000, h = 2800;
                 
                 {//地面
-                    var geometry = new THREE.Geometry();
-                    geometry.vertices.push(
+                    var g = new THREE.Geometry();
+                    g.vertices.push(
                     //从房间顶部向下看
                     new THREE.Vector3( -l/2, -w/2, 0 ),//下-左下
                     new THREE.Vector3( l/2, -w/2, 0 ),//下-右下
@@ -150,7 +143,6 @@
                     new THREE.Vector3( l/2, w/2, h ),//上-右上
                     new THREE.Vector3( -l/2, w/2, h ),//上-左上 
                     );
-                    var g = geometry;
                     g.faces.push( new THREE.Face3( 0, 1, 2 ) );
                     g.faces.push( new THREE.Face3( 0, 2, 3 ) );
                     g.computeBoundingSphere();
@@ -159,8 +151,8 @@
                     scene.add( mesh );
                 }
                 {//左
-                    var geometry = new THREE.Geometry();
-                    geometry.vertices.push(
+                    var g = new THREE.Geometry();
+                    g.vertices.push(
                     //从房间顶部向下看
                     new THREE.Vector3( -l/2, -w/2, 0 ),//下-左下
                     new THREE.Vector3( l/2, -w/2, 0 ),//下-右下
@@ -172,8 +164,6 @@
                     new THREE.Vector3( l/2, w/2, h ),//上-右上
                     new THREE.Vector3( -l/2, w/2, h ),//上-左上 
                     );
-
-                    var g = geometry;
                     g.faces.push( new THREE.Face3( 0, 3, 7 ) );
                     g.faces.push( new THREE.Face3( 0, 7, 4 ) );
                     g.computeBoundingSphere();
@@ -393,7 +383,7 @@
             function getEntity(ent, element1)
             {
                 var i, j, k, l, m, n;
-                /*
+                
                 if ('Entity' == element1.nodeName)//Entity
                 {
                     alert(element1.nodeName + entCount);
@@ -409,8 +399,7 @@
                     alert(element1.nodeName + entCount);
                     entCount++;
                 }
-                */
-                    
+                
 
                 for (k = 0; k < element1.childNodes.length; k++)//拿到子节点的信息
                 {
@@ -447,23 +436,50 @@
                                     }
                                     else if ('vert' == element4.nodeName)//顶点信息
                                     {
+                                        var arVert, arTexture, arIndex;//顶点、贴图坐标、索引
                                         for (n = 0; n < element4.childNodes.length; n++)
                                         {
                                             var element5 = element4.childNodes[n];
                                             if ('v' == element5.nodeName)
                                             {
                                                 var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
-                                                var arVert = sValue.split(' ');//通过空格分开拿到数据
-                                                //alert(arVert);
+                                                sValue = sValue.trim();//去除前后空格
+                                                arVert = sValue.split(' ');//通过空格分开拿到数据
                                             }
                                             else if ('vt' == element5.nodeName)
                                             {
-
+                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
+                                                sValue = sValue.trim();//去除前后空格
+                                                arTexture = sValue.split(' ');//通过空格分开拿到数据
                                             }
                                             else if ('vi' == element5.nodeName)
                                             {
-
+                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
+                                                sValue = sValue.trim();//去除前后空格
+                                                arIndex = sValue.split(' ');//通过空格分开拿到数据
                                             }
+                                        }
+                                        
+                                        var l1 = arVert.length;
+                                        var l2 = arTexture.length;
+                                        var l3 = arIndex.length;
+                                        alert(l1 + ',' + l2 + ',' + l3);
+                                        if (l1 == l2 && l1 / 3 * 2 == l3)
+                                        {
+                                            alert('顶点数、贴图坐标数和顶点索引数正确');
+                                            var geometry = new THREE.Geometry();
+                                            for (n = 0; n < l1; n+=3)
+                                            {
+                                                geometry.vertices.push(new THREE.Vector3( arVert[n], arVert[n+1], arVert[n+2] ));
+                                            }
+                                            for (n = 0; n < l3; n+=6)
+                                            {
+                                                geometry.faces.push( new THREE.Face3( arIndex[n], arIndex[n+2], arIndex[n+4] ) );
+                                            }
+                                            geometry.computeBoundingSphere();
+                                            var material = new THREE.MeshBasicMaterial({color:0x000000});
+                                            var mesh = new THREE.Mesh( geometry,material );
+                                            scene.add( mesh );
                                         }
                                     }
                                 }
@@ -509,26 +525,13 @@
                 }
             }
 
-            void loadVVF(xmlfile)
-            {
-                var xmlDoc=parseXML(xmlfile);
-                var ent = new Entity();
-                var elements1 = xmlDoc.getElementsByTagName("Entity");
-                for (var i = 0; i < elements1.length; i++) 
-                {
-                    var attr = elements1[i].getElementsByTagName("Attr")[0].firstChild.nodeValue;
-                    var Entity = elements1[i].getElementsByTagName("Entity")[0].firstChild.nodeValue;               
-                }
-            }
-            
-
             //加载3DShow场景
             function loadScene_3DShow()
             {
                 //2AECA33B_1617378
                 //2B58D52C_21900
                 //Test
-                var xmlfile = "scene/HomeKooTemp78257_2/scenedata/2B58D52C_21900.xml";
+                var xmlfile = "scene/HomeKooTemp78257_2/scenedata/2B58D52C_21900.xml";//一定要把vvf改名为xml才能加载
                 var xmlDoc=loadXMLDoc2(xmlfile);
                 alert(xmlDoc);//要弹出这个后面才能读到数据，可能时异步加载xml导致的问题
                 var vvf = xmlDoc.getElementsByTagName("vvFile");//vvFile
@@ -552,109 +555,8 @@
                         var element1 = vvf[i].childNodes[j];
                         var ent = new Entity();
                         getEntity(ent, element1);
-                        /*
-                        if ('Entity' == element1.nodeName)//第一级Entity
-                        {
-                            //alert(element1.nodeName);
-                            for (k = 0; k < element1.childNodes.length; k++)//拿到子节点的信息
-                            {
-                                var element2 = element1.childNodes[k];
-                                if ('Entity' == element2.nodeName)//Entity
-                                {
-                                    //alert(element2.nodeName);
-                                }
-                                else if ('Surface' == element2.nodeName)//mesh数据
-                                {
-                                    for (l = 0; l < element2.childNodes.length; l++)
-                                    {
-                                        var element3 = element2.childNodes[l];
-                                        if ('Mesh' == element3.nodeName)
-                                        {
-                                            for (m = 0; m < element3.childNodes.length; m++)
-                                            {
-                                                var element4 = element3.childNodes[m];
-                                                if ('mat' == element4.nodeName)//贴图信息
-                                                {
-                                                    for (n = 0; n < element4.childNodes.length; n++)
-                                                    {
-                                                        var element5 = element4.childNodes[n];
-                                                        if ('map' == element5.nodeName)
-                                                        {
-
-                                                        }
-                                                        else if ('c' == element5.nodeName)
-                                                        {
-
-                                                        }
-                                                    }
-                                                }
-                                                else if ('vert' == element4.nodeName)//顶点信息
-                                                {
-                                                    for (n = 0; n < element4.childNodes.length; n++)
-                                                    {
-                                                        var element5 = element4.childNodes[n];
-                                                        if ('v' == element5.nodeName)
-                                                        {
-                                                            var sValue = element5.nodeValue;
-                                                            sValue.split(' ');//通过空格分开拿到数据
-                                                            alert(sValue);
-                                                        }
-                                                        else if ('vt' == element5.nodeName)
-                                                        {
-
-                                                        }
-                                                        else if ('vi' == element5.nodeName)
-                                                        {
-
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                else if ('Attr' == element2.nodeName)//Attr属性
-                                {
-                                    //alert(element2.nodeName);
-                                    for (l = 0; l < element2.childNodes.length; l++)
-                                    {
-                                        var element3 = element2.childNodes[l];
-                                        if ('id' == element3.nodeName)
-                                        {
-
-                                        }
-                                        else if ('motion_type' == element3.nodeName)
-                                        {
-
-                                        }
-                                        else if ('motion_pos' == element3.nodeName)
-                                        {
-
-                                        }
-                                        else if ('motion_vec' == element3.nodeName)
-                                        {
-
-                                        }
-                                        else if ('motion_valuecur' == element3.nodeName)
-                                        {
-
-                                        }
-                                        else if ('motion_valuemin' == element3.nodeName)
-                                        {
-
-                                        }
-                                        else if ('motion_valuemax' == element3.nodeName)
-                                        {
-
-                                        }
-                                    }
-                                }
-                            }
-                            
-                        }*/
                     }         
                 }
-                
             }
             
             //构造动画
@@ -699,10 +601,7 @@
                     windowWidth = nMaxLength * window.innerWidth / window.innerHeight;
                 }
 
-                setcamera(windowWidth,windowHeight, 10, 10000, 
-                            camera_position.x, camera_position.y ,camera_position.z, 
-                            camera_up.x, camera_up.y, camera_up.z, 
-                            camera_tar.x, camera_tar.y, camera_tar.z);
+                setcamera(windowWidth,windowHeight, 10, 10000, camera_position, camera_up, camera_tar);
 
                 //以下两句为动画效果
                 //camera.position.x =camera.position.x +1;//视图移动
@@ -720,7 +619,7 @@
             }
 
             function threeStart() {
-                /*
+                
                 //鼠标滑轮消息
                 var oDiv = document.getElementById('canvas-frame');  
                 function onMouseWheel(ev) 
@@ -784,11 +683,11 @@
                 initLight();
                 initObject_Net();
                 initObject();
-		*/
-		loadScene_3DShow();
-                //initObject_Texture();
+		
+		        loadScene_3DShow();
+                initObject_Texture();
                 //initTween();//初始化动画
-                //render();
+                render();
             }
 
         </script>
