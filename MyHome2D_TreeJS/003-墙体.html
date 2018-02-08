@@ -187,7 +187,8 @@
                 geometry.vertices[2].uv = new THREE.Vector2(2,2);
                 geometry.vertices[3].uv = new THREE.Vector2(0,2);
                 // 加载贴图必须是网上的不能是本地的
-                var texture = THREE.ImageUtils.loadTexture("textures/1.bmp",null,function(t){});
+                var texPath = "scene/HomeKooTemp78257_2/tex/1C3BA531_195003.jpg";
+                var texture = THREE.ImageUtils.loadTexture(texPath/*"textures/1.bmp"*/,null,function(t){});
                 var material = new THREE.MeshBasicMaterial({map:texture});
                 var mesh1 = new THREE.Mesh( geometry,material );
                 scene.add( mesh1 );
@@ -384,6 +385,7 @@
             {
                 var i, j, k, l, m, n;
                 
+                /*
                 if ('Entity' == element1.nodeName)//Entity
                 {
                     alert(element1.nodeName + entCount);
@@ -399,6 +401,7 @@
                     alert(element1.nodeName + entCount);
                     entCount++;
                 }
+                */
                 
 
                 for (k = 0; k < element1.childNodes.length; k++)//拿到子节点的信息
@@ -416,6 +419,7 @@
                             var element3 = element2.childNodes[l];
                             if ('Mesh' == element3.nodeName)
                             {
+                                //var material = new THREE.MeshBasicMaterial();//拿到该表面的材质
                                 for (m = 0; m < element3.childNodes.length; m++)
                                 {
                                     var element4 = element3.childNodes[m];
@@ -426,7 +430,11 @@
                                             var element5 = element4.childNodes[n];
                                             if ('map' == element5.nodeName)
                                             {
-
+                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
+                                                // 加载贴图必须是网上的不能是本地的
+                                                var texPath = "scene/HomeKooTemp78257_2/tex/" + sValue + ".jpg";
+                                                var texture = THREE.ImageUtils.loadTexture(texPath,null,function(t){});
+                                                //material.map = texture;
                                             }
                                             else if ('c' == element5.nodeName)
                                             {
@@ -463,14 +471,20 @@
                                         var l1 = arVert.length;
                                         var l2 = arTexture.length;
                                         var l3 = arIndex.length;
-                                        alert(l1 + ',' + l2 + ',' + l3);
+                                        //alert(l1 + ',' + l2 + ',' + l3);
                                         if (l1 == l2 && l1 / 3 * 2 == l3)
                                         {
-                                            alert('顶点数、贴图坐标数和顶点索引数正确');
+                                            //alert('顶点数、贴图坐标数和顶点索引数正确');
                                             var geometry = new THREE.Geometry();
                                             for (n = 0; n < l1; n+=3)
                                             {
                                                 geometry.vertices.push(new THREE.Vector3( arVert[n], arVert[n+1], arVert[n+2] ));
+                                            }
+                                            for (n = 0; n < l1; n+=3)
+                                            {
+                                                var index = n / 3;
+                                                //alert(index+':'+arTexture[n]+arTexture[n+1]);
+                                                geometry.vertices[index].uv = new THREE.Vector2( arTexture[n], arTexture[n+1]);
                                             }
                                             for (n = 0; n < l3; n+=6)
                                             {
@@ -526,12 +540,12 @@
             }
 
             //加载3DShow场景
-            function loadScene_3DShow()
-            {
+            function loadScene_3DShow(sceneName)
+            {                
                 //2AECA33B_1617378
                 //2B58D52C_21900
                 //Test
-                var xmlfile = "scene/HomeKooTemp78257_2/scenedata/2B58D52C_21900.xml";//一定要把vvf改名为xml才能加载
+                var xmlfile = "scene/" + sceneName + "/scenedata/2AECA33B_1617378.xml";//一定要把vvf改名为xml才能加载
                 var xmlDoc=loadXMLDoc2(xmlfile);
                 alert(xmlDoc);//要弹出这个后面才能读到数据，可能时异步加载xml导致的问题
                 var vvf = xmlDoc.getElementsByTagName("vvFile");//vvFile
@@ -684,7 +698,7 @@
                 initObject_Net();
                 initObject();
 		
-		        loadScene_3DShow();
+		        loadScene_3DShow("HomeKooTemp78257_2");
                 initObject_Texture();
                 //initTween();//初始化动画
                 render();
