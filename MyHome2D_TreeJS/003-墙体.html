@@ -6,12 +6,14 @@
         <script src="js/Three.js" data-ke-src="js/Three.js"></script>
         <script src="js/Stats.js"></script><!--性能检测器-->
         <script src="js/tween.min.js" data-ke-src="js/tween.min.js"></script> <!--动画js库-->
+        <script src="LoadScene.js"></script><!--加载场景的js-->
+        <script src="filePath.js"></script><!--文件操作的js-->
         <style type="text/css">
             div#canvas-frame {
                 border: none;
                 cursor: pointer;
                 width: 100%;
-                height: 600px;
+                height: 900px;
                 background-color: rgb(141, 24, 24);
             }
 
@@ -111,7 +113,6 @@
             //绘制彩色线条
             var cube;//立体物体
             function initObject() {
-
                 /*
                 var geometry = new THREE.Geometry();
                 var material = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors} );
@@ -124,7 +125,7 @@
                 geometry.colors.push( color1, color2 );
                 var line = new THREE.Line( geometry, material, THREE.LinePieces );
                 scene.add(line);
-                */
+                
 
                 //三角面
                 var l = 6000, w = 4000, h = 2800;
@@ -170,407 +171,86 @@
                     var material = new THREE.MeshBasicMaterial({color:0x000000});
                     var mesh = new THREE.Mesh( g,material );
                     scene.add( mesh );
-                }
+                }*/
             }
-
-            
 
             //绘制一个立体物体
             var mesh;
 
             //贴图
             function initObject_Texture(){
+                /*
                 //构造一个500*300的平面
-                var geometry = new THREE.PlaneGeometry( 500, 300, 1, 1 );
+                var geometry = new THREE.PlaneGeometry( 5000, 3000, 1, 1 );
                 geometry.vertices[0].uv = new THREE.Vector2(0,0);
                 geometry.vertices[1].uv = new THREE.Vector2(2,0);
                 geometry.vertices[2].uv = new THREE.Vector2(2,2);
                 geometry.vertices[3].uv = new THREE.Vector2(0,2);
                 // 加载贴图必须是网上的不能是本地的
-                var texPath = "scene/HomeKooTemp78257_2/tex/1C3BA531_195003.jpg";
-                var texture = THREE.ImageUtils.loadTexture(texPath/*"textures/1.bmp"*/,null,function(t){});
+                var texPath = "textures/cubeTexture4.bmp";
+                var texture = THREE.ImageUtils.loadTexture(texPath,null,function(t){});
                 var material = new THREE.MeshBasicMaterial({map:texture});
                 var mesh1 = new THREE.Mesh( geometry,material );
                 scene.add( mesh1 );
-            }
-
-            
-            function Entity()
-            {
-                this.geometry = new THREE.Geometry();
-                this.id = 0;
-                this.motion_type = 0;
-                this.motion_pos = new THREE.Vector2(0,0,0);
-                this.motion_vec = new THREE.Vector2(0,0,1);
-                this.motion_valuecur = 0;
-                this.motion_valuemin = 0;
-                this.motion_valuemax = 0;
-            }
-
-            //解析xml文件
-            function parseXML(xmlFile){
-                // 创建解析XML后的DOM对象
-                var xmlDoc = null;
-                // 根据不同浏览器进行解析
-                if(window.DOMParser){
-                    // 其他浏览器  
-                    alert("window.DOMParser");
-                    var parser = new DOMParser();
-                    alert("window.DOMParser-1");
-                    xmlDoc = parser.parseFromString(xmlFile,"application/xml");
-                    alert("window.DOMParser-2");
-                }else{
-                    // IE浏览器
-                    alert("!window.DOMParser");
-                    xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
-                    xmlDoc.async = false;
-                    xmlDoc.loadXML(xmlFile);
-                    alert("!window.DOMParser_2");
-                }
-                return xmlDoc;
-            }
-
-            function parseXML2(xmlFile)
-            {
-                alert("parseXML2——1");
-                    var xmlDoc=null;
-                    //判断浏览器的类型
-                    //支持IE浏览器
-                    if(!window.DOMParser && window.ActiveXObject)
-                    {
-                        alert("!window.DOMParser && window.ActiveXObject");
-                        var xmlDomVersions = ['MSXML.2.DOMDocument.6.0','MSXML.2.DOMDocument.3.0','Microsoft.XMLDOM'];
-                        for(var i=0;i<xmlDomVersions.length;i++){
-                            try{
-                                xmlDoc = new ActiveXObject(xmlDomVersions[i]);
-                                break;
-                            }catch(e){
-                            }
-                        }
-                    }
-                    //支持Mozilla浏览器
-                    else if(document.implementation && document.implementation.createDocument)
-                    {
-                        alert("支持Mozilla浏览器");
-                        try{
-                            /* document.implementation.createDocument('','',null); 方法的三个参数说明
-                            * 第一个参数是包含文档所使用的命名空间URI的字符串； 
-                            * 第二个参数是包含文档根元素名称的字符串； 
-                            * 第三个参数是要创建的文档类型（也称为doctype）
-                            */
-                            xmlDoc = document.implementation.createDocument('','',null);
-                        }catch(e){
-                        }
-                    }
-                    else
-                    {
-                        alert("返回null");
-                        return null;
-                    }
-                    alert("parseXML2——3");
-                    if(xmlDoc!=null)
-                    {
-                        xmlDoc.async = false;
-                        alert("parseXML2——3.2");
-                        xmlDoc.load(xmlFile);
-                        alert("parseXML2——3.3");
-                    }
-                    alert("parseXML2——4");
-                    return xmlDoc;
-            }
-
-            //加载xml文件
-            function loadXMLDoc(dname) 
-            {
-                var xmlDoc;
-                try //Internet Explorer
-                {
-                    alert("loadXMLDoc_1");
-                    xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
-                }
-                catch(e)
-                {
-                    try //Firefox, Mozilla, Opera, etc.
-                    {
-                        alert("loadXMLDoc_2");
-                        xmlDoc=document.implementation.createDocument("","",null);
-                    }
-                    catch(e) 
-                    {
-                        alert(e.message);
-                    }
-                }
-                try 
-                {
-                    alert("loadXMLDoc_3");
-                    xmlDoc.async=false;
-                    xmlDoc.load(dname);
-                    alert("loadXMLDoc_4");
-                    return(xmlDoc);
-                }
-                catch(e) 
-                {
-                    alert("loadXMLDoc_5");
-                    //webkit BUG,chrome etc.
-                    xmlDoc = new XMLHttpRequest(); //用AJAX中常见的套路来就可以解决了，不影响IE、FIREFOX的原生加载XML 
-                    xmlDoc.overrideMimeType("text/xml");
-                    xmlDoc.open("GET", dname, false);
-                    xmlDoc.send(null);
-                    //xmlResult = xmlDoc.responseXML; 
-                    alert("loadXMLDoc_6");
-                    return xmlDoc;
-
-                    //alert(e.message);
-                }
-                return(null);
-            }
-
-            function loadXMLDoc1(dname)
-            {
-                var xmlDoc;
-
-                // 针对 IE 的代码
-                if (window.ActiveXObject)
-                {
-                xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
-                }
-
-                // 针对 Mozilla、Firefox、Opera 的代码
-                else if (document.implementation && document.implementation.createDocument)
-                {
-                xmlDoc=document.implementation.createDocument("","",null);
-                }
-
-                else
-                {
-                alert('您的浏览器无法处理此脚本');
-                }
-
-                alert('loadXMLDoc1-1');
-                xmlDoc.async=false;
-                xmlDoc.load(dname);
-                alert('loadXMLDoc1-2');
-                return(xmlDoc);
-            }
-
-            //加载xml可用版本（火狐浏览器可以、谷歌浏览器不行）
-            function loadXMLDoc2(xmlFile) 
-            {
-                var xmlDoc;
-                if (window.ActiveXObject) 
-                {//IE浏览器
-                    xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
-                    xmlDoc.async = false;
-                    xmlDoc.load(xmlFile);
-                }
-                else if (isFirefox=navigator.userAgent.indexOf("Firefox")>0) 
-                {//火狐浏览器
-                    xmlDoc = document.implementation.createDocument('', '', null);
-                    xmlDoc.load(xmlFile);
-                }
-                else
-                { //谷歌浏览器（经过测试不可用）
-                    var xmlhttp = new window.XMLHttpRequest();
-                    xmlhttp.open("GET",xmlFile,false);
-                    xmlhttp.send(null);
-                    if(xmlhttp.readyState == 4)
-                        xmlDoc = xmlhttp.responseXML.documentElement;
-                }
-
-                return xmlDoc;
-            }
-
-            var entCount = 0;
-            function getEntity(ent, element1)
-            {
-                var i, j, k, l, m, n;
-                
-                /*
-                if ('Entity' == element1.nodeName)//Entity
-                {
-                    alert(element1.nodeName + entCount);
-                    entCount++;
-                }
-                else if ('Surface' == element1.nodeName)//mesh数据
-                {
-                    alert(element1.nodeName + entCount);
-                    entCount++;
-                }
-                else if ('Attr' == element1.nodeName)//mesh数据
-                {
-                    alert(element1.nodeName + entCount);
-                    entCount++;
-                }
                 */
                 
 
-                for (k = 0; k < element1.childNodes.length; k++)//拿到子节点的信息
-                {
-                    var element2 = element1.childNodes[k];
-                    if ('Entity' == element2.nodeName)//Entity
-                    {
-                        getEntity(ent, element2);
-                    }
-                    else if ('Surface' == element2.nodeName)//mesh数据
-                    {
-                        //alert(element2.nodeName);
-                        for (l = 0; l < element2.childNodes.length; l++)
-                        {
-                            var element3 = element2.childNodes[l];
-                            if ('Mesh' == element3.nodeName)
-                            {
-                                //var material = new THREE.MeshBasicMaterial();//拿到该表面的材质
-                                for (m = 0; m < element3.childNodes.length; m++)
-                                {
-                                    var element4 = element3.childNodes[m];
-                                    if ('mat' == element4.nodeName)//贴图信息
-                                    {
-                                        for (n = 0; n < element4.childNodes.length; n++)
-                                        {
-                                            var element5 = element4.childNodes[n];
-                                            if ('map' == element5.nodeName)
-                                            {
-                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
-                                                // 加载贴图必须是网上的不能是本地的
-                                                var texPath = "scene/HomeKooTemp78257_2/tex/" + sValue + ".jpg";
-                                                var texture = THREE.ImageUtils.loadTexture(texPath,null,function(t){});
-                                                //material.map = texture;
-                                            }
-                                            else if ('c' == element5.nodeName)
-                                            {
-
-                                            }
-                                        }
-                                    }
-                                    else if ('vert' == element4.nodeName)//顶点信息
-                                    {
-                                        var arVert, arTexture, arIndex;//顶点、贴图坐标、索引
-                                        for (n = 0; n < element4.childNodes.length; n++)
-                                        {
-                                            var element5 = element4.childNodes[n];
-                                            if ('v' == element5.nodeName)
-                                            {
-                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
-                                                sValue = sValue.trim();//去除前后空格
-                                                arVert = sValue.split(' ');//通过空格分开拿到数据
-                                            }
-                                            else if ('vt' == element5.nodeName)
-                                            {
-                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
-                                                sValue = sValue.trim();//去除前后空格
-                                                arTexture = sValue.split(' ');//通过空格分开拿到数据
-                                            }
-                                            else if ('vi' == element5.nodeName)
-                                            {
-                                                var sValue = element5.childNodes[0].nodeValue;//这里不能直接用element5.nodeValue
-                                                sValue = sValue.trim();//去除前后空格
-                                                arIndex = sValue.split(' ');//通过空格分开拿到数据
-                                            }
-                                        }
-                                        
-                                        var l1 = arVert.length;
-                                        var l2 = arTexture.length;
-                                        var l3 = arIndex.length;
-                                        //alert(l1 + ',' + l2 + ',' + l3);
-                                        if (l1 == l2 && l1 / 3 * 2 == l3)
-                                        {
-                                            //alert('顶点数、贴图坐标数和顶点索引数正确');
-                                            var geometry = new THREE.Geometry();
-                                            for (n = 0; n < l1; n+=3)
-                                            {
-                                                geometry.vertices.push(new THREE.Vector3( arVert[n], arVert[n+1], arVert[n+2] ));
-                                            }
-                                            for (n = 0; n < l1; n+=3)
-                                            {
-                                                var index = n / 3;
-                                                //alert(index+':'+arTexture[n]+arTexture[n+1]);
-                                                geometry.vertices[index].uv = new THREE.Vector2( arTexture[n], arTexture[n+1]);
-                                            }
-                                            for (n = 0; n < l3; n+=6)
-                                            {
-                                                geometry.faces.push( new THREE.Face3( arIndex[n], arIndex[n+2], arIndex[n+4] ) );
-                                            }
-                                            geometry.computeBoundingSphere();
-                                            var material = new THREE.MeshBasicMaterial({color:0x000000});
-                                            var mesh = new THREE.Mesh( geometry,material );
-                                            scene.add( mesh );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else if ('Attr' == element2.nodeName)//Attr属性
-                    {
-                        //alert(element2.nodeName);
-                        for (l = 0; l < element2.childNodes.length; l++)
-                        {
-                            var element3 = element2.childNodes[l];
-                            if ('id' == element3.nodeName)
-                            {
-
-                            }
-                            else if ('motion_type' == element3.nodeName)
-                            {
-
-                            }
-                            else if ('motion_pos' == element3.nodeName)
-                            {
-
-                            }
-                            else if ('motion_vec' == element3.nodeName)
-                            {
-
-                            }
-                            else if ('motion_valuecur' == element3.nodeName)
-                            {
-
-                            }
-                            else if ('motion_valuemin' == element3.nodeName)
-                            {
-
-                            }
-                            else if ('motion_valuemax' == element3.nodeName)
-                            {
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            //加载3DShow场景
-            function loadScene_3DShow(sceneName)
-            {                
-                //2AECA33B_1617378
-                //2B58D52C_21900
-                //Test
-                var xmlfile = "scene/" + sceneName + "/scenedata/2AECA33B_1617378.xml";//一定要把vvf改名为xml才能加载
-                var xmlDoc=loadXMLDoc2(xmlfile);
-                alert(xmlDoc);//要弹出这个后面才能读到数据，可能时异步加载xml导致的问题
-                var vvf = xmlDoc.getElementsByTagName("vvFile");//vvFile
-                //alert(vvf.length);
+                /*
+                //alert('顶点数、贴图坐标数和顶点索引数正确');
+                var texPath = "textures/cubeTexture4.bmp";
+                var texture = THREE.ImageUtils.loadTexture(texPath,null,function(t){});
+                texture.uvsNeedUpdate = true;
+                var material = new THREE.MeshBasicMaterial({map:texture});//拿到该表面的材质
                 
-                //根节点vvFile
-                //子节点Entity(vvFile只有一个Entity子节点，没有Attr)
-                //Entity的子节点：多个Entity和一个Attr或者有Surface
-                //Entity递归
-                //Attr子节点:id、motion_type、motion_pos、motion_vec、motion_valuecur、motion_valuemin、motion_valuemax
-                //Surface子节点:Mesh
-                //Mesh子节点：mat、vert
-                //mat子节点：map、c
-                //vert子节点：v、vt、vi
-                var i, j, k, l, m, n;
-                for (i = 0; i < vvf.length; i++)//vvFile 
-                {
-                    alert(vvf[i].nodeName);
-                    for (j = 0; j < vvf[i].childNodes.length; j++)//拿到子节点的信息
-                    {
-                        var element1 = vvf[i].childNodes[j];
-                        var ent = new Entity();
-                        getEntity(ent, element1);
-                    }         
-                }
+                //material.map = texture;
+                
+
+                var geometry = new THREE.Geometry();
+                geometry.vertices.push(new THREE.Vector3( 0, 0, 0 ));
+                geometry.vertices.push(new THREE.Vector3( 1000, 0, 0 ));
+                geometry.vertices.push(new THREE.Vector3( 1000, 1000, 0 ));
+                
+                geometry.vertices[0].uv = new THREE.Vector2( 0, 0);
+                geometry.vertices[1].uv = new THREE.Vector2( 2, 0);
+                geometry.vertices[2].uv = new THREE.Vector2( 2, 2);
+                
+                geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+                geometry.computeCentroids();
+                geometry.computeFaceNormals();
+                geometry.computeVertexNormals();
+                geometry.computeBoundingSphere();
+
+                var mesh = new THREE.Mesh( geometry,material );
+                scene.add( mesh );*/
+
+
+                /**
+                 * 纹理贴图网格模型
+                
+                var geometry = new THREE.Geometry(); //创建一个空几何体对象
+                var p1 = new THREE.Vector3(0,0,0); //顶点1坐标
+                var p2 = new THREE.Vector3(5000,0,0); //顶点2坐标
+                var p3 = new THREE.Vector3(5000,5000,0); //顶点3坐标
+                geometry.vertices.push(p1,p2,p3); //顶点坐标添加到geometry对象
+                var normal = get_Normal(p1, p2, p3);//new THREE.Vector3( 0, 0, 1 ); //三角面法向量
+                var face0 = new THREE.Face3( 0, 1, 2, normal); //三角面1
+                geometry.faces.push( face0 ); //三角面1、2添加到几何体
+                var t0 = new THREE.Vector2(0,0);//图片左下角
+                var t1 = new THREE.Vector2(1,0);//图片右下角
+                var t2 = new THREE.Vector2(1,1);//图片右上角
+                var t3 = new THREE.Vector2(0,1);//图片左上角
+                uv1 = [t0,t1,t2];//选中图片一个三角区域像素——映射到三角面1
+                geometry.faceVertexUvs[0].push(uv1);//纹理坐标传递给纹理三角面属性
+                //geometry.vertices[0].uv = t0;
+                //geometry.vertices[1].uv = t1;
+                //geometry.vertices[2].uv = t2;
+                var texture = THREE.ImageUtils.loadTexture("textures/cubeTexture4.bmp");//加载图片
+                var material=new THREE.MeshLambertMaterial({
+                    map:texture,//纹理属性map赋值
+                    side:THREE.DoubleSide//两面可见
+                });//材质对象
+                var mesh=new THREE.Mesh(geometry,material);//纹理贴图网格模型对象
+                scene.add(mesh);//纹理贴图网格模型添加到场景中 */
             }
             
             //构造动画
@@ -646,12 +326,14 @@
                         nMaxLength+=500;
                         if (nMaxLength > 20000)
                             nMaxLength = 20000;
+                        camera_position.z = nMaxLength;
                     }
                     else
                     {  
                         nMaxLength-=500;
                         if (nMaxLength < 2000)
                             nMaxLength = 2000; 
+                        camera_position.z = nMaxLength;
                     }  
                     if(ev.preventDefault)
                     {//FF 和 Chrome
@@ -697,8 +379,8 @@
                 initLight();
                 initObject_Net();
                 initObject();
-		
-		        loadScene_3DShow("HomeKooTemp78257_2");
+        
+                loadScene_3DShow("HomeKooTemp78257_2");
                 initObject_Texture();
                 //initTween();//初始化动画
                 render();
